@@ -1,0 +1,52 @@
+﻿@startuml
+title US-26 - Avboka bokning (Sekvensdiagram)
+
+actor Kund
+participant "Program" as UI
+participant "BookingService" as Service
+participant "IBookingRepository" as Repo
+participant "Booking" as Booking
+
+Kund -> UI : Begär avbokning
+UI -> Service : CancelBooking(customerId, bookingId)
+
+Service -> Repo : GetById(bookingId)
+Repo --> Service : Booking eller null
+
+alt Bokningen saknas
+    Service --> UI : NotFound
+else Bokningen finns
+    Service -> Booking : Kontrollera CustomerId
+
+    alt Fel kund
+        Service --> UI : NotFound
+    else Rätt kund
+        Service -> Booking : Kontrollera Status
+
+        alt Status är inte Confirmed
+            Service --> UI : Avbokning nekas
+        else Status är Confirmed
+            Service -> Booking : Kontrollera StartDate
+
+            alt Avbokningsfristen har passerat
+                Service --> UI : TooLate
+            else Avbokning tillåten
+                Service -> Booking : Cancel()
+                Booking --> Service : Status = Cancelled
+
+                Service -> Repo : UpdateBooking(booking)
+                Repo --> Service : true / false
+
+                alt Sparandet lyckas
+                    Service --> UI : Success
+                else Sparandet misslyckas
+                    Service --> UI : SaveFailed
+                end
+            end
+        end
+    end
+end
+
+UI --> Kund : Visa resultat
+
+@enduml

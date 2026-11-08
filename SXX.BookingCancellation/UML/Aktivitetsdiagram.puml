@@ -1,0 +1,44 @@
+﻿@startuml
+title US-26 - Avboka bokning (Aktivitetsdiagram)
+
+start
+
+:Kunden begär avbokning;
+:Systemet hämtar bokningen;
+
+if (Finns bokningen?) then (Ja)
+
+  if (Tillhör bokningen kunden?) then (Ja)
+
+    if (Är status Confirmed?) then (Ja)
+
+      if (Är dagens datum före startdatum?) then (Ja)
+
+        :Ändra status till Cancelled;
+        :Spara avbokningen;
+
+        if (Lyckades sparandet?) then (Ja)
+          :Visa bekräftelse;
+        else (Nej)
+          :Visa felmeddelande;
+        endif
+
+      else (Nej)
+        :Neka avbokning;
+        :Hänvisa kunden till personalen;
+      endif
+
+    else (Nej)
+      :Neka avbokning;
+    endif
+
+  else (Nej)
+    :Visa att bokningen inte hittades;
+  endif
+
+else (Nej)
+  :Visa att bokningen inte hittades;
+endif
+
+stop
+@enduml
